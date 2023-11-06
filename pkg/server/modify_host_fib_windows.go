@@ -279,12 +279,26 @@ func interfaceIndexFromIPv4Addr(destinationIP winipcfg.RawSockaddrInet) (uint32,
 	if err != nil {
 		return 0, err
 	}
+	// 0 is a reserved interface index according to
+	// https://learn.microsoft.com/en-us/windows-hardware/drivers/network/allocating-an-interface-index
+	var interfaceIndex uint32 = 0
+	var longestMatchSoFar uint8 = 0
 	for _, route := range routingTable {
 		if route.DestinationPrefix.Prefix().Contains(destinationIP.Addr()) {
-			return route.InterfaceIndex, nil
+			prefixLen := route.DestinationPrefix.PrefixLength
+			if prefixLen == 32 {
+				// Shortcut for host routes
+				return route.InterfaceIndex, nil
+			} else if prefixLen > longestMatchSoFar {
+				longestMatchSoFar = prefixLen
+				interfaceIndex = route.InterfaceIndex
+			}
 		}
 	}
 
+	if interfaceIndex != 0 {
+		return interfaceIndex, nil
+	}
 	return 0, fmt.Errorf("no route found for %v", destinationIP)
 }
 
