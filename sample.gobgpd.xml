@@ -1,0 +1,18 @@
+<!-- Sample WinSW 3.x config for gobgpd. Rename this to gobgpd.xml -->
+<service>
+	<id>gobgpd</id>
+	<executable>%BASE%\gobgpd.exe</executable>
+	<arguments>-f config.toml</arguments>
+	<startmode>Automatic</startmode>
+	<logpath>%BASE%\logs</logpath>
+	<log mode="roll-by-size">
+		<sizeThreshold>10240</sizeThreshold>
+		<keepFiles>8</keepFiles>
+	</log>
+    <serviceaccount>
+	    <username>YOURDOMAIN\useraccount</username>
+	    <password>Pa55w0rd</password>
+	    <allowservicelogon>true</allowservicelogon>
+    </serviceaccount>
+	<onfailure action="restart" delay="10 sec"/>
+</service>
